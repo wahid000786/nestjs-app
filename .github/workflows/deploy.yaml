@@ -14,9 +14,9 @@ jobs:
       - name: Deploy to Remote Server
         uses: appleboy/ssh-action@master
         with:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          EC2_KEY: ${{ secrets.EC2_KEY }}
+          key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
             cd /home/ubuntu/hello-world-app
