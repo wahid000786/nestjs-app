@@ -24,6 +24,15 @@ jobs:
 
       - name: Run Tests
         run: npm test
+        
+      - name: Set up SSH
+        env:
+          EC2_KEY: ${{ secrets.EC2_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan your-ec2-instance >> ~/.ssh/known_hosts
 
       - name: Deploy to EC2
         env:
@@ -31,8 +40,6 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_KEY: ${{ secrets.EC2_KEY }}
         run: |
-          echo "$EC2_KEY" > EC2_KEY
-          chmod 600 EC2_KEY
           
           echo "Testing SSH connection..."
           ssh -o StrictHostKeyChecking=no -i EC2_KEY $EC2_USER@$EC2_HOST "echo 'SSH connection successful.'"
