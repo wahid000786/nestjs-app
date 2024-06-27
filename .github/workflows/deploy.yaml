@@ -25,13 +25,6 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      - name: Set up SSH
-        run: |
-          echo "${{ secrets.EC2_KEY }}" > /tmp/ec2_key
-          chmod 600 /tmp/ec2_key
-        env:
-          EC2_KEY: ${{ secrets.EC2_KEY }}  
-
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
