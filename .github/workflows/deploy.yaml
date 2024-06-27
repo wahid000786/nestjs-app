@@ -4,25 +4,50 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  Deploy:
-    name: Deploy to EC2
+  build:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Deploy to Remote Server
-        uses: appleboy/ssh-action@master
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_KEY }}
-          port: 22
-          script: |
-            cd /home/ubuntu/hello-world-app
-            git checkout .
-            git pull
-            npm install
-            npm run build
-            pm2 restart
-            exit
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_KEY: ${{ secrets.EC2_KEY }}
+        run: |
+          echo "${EC2_KEY}"
+          chmod 600 $EC2_KEY
+          
+          echo "Testing SSH connection..."
+          ssh -o StrictHostKeyChecking=no -i $EC2_KEY $EC2_USER@$EC2_HOST "echo 'SSH connection successful.'"
+          
+          echo "Copying files to EC2 instance..."
+          # scp -o StrictHostKeyChecking=no -i $EC2_KEY -r ./* $EC2_USER@$EC2_HOST:/home/ubuntu/typescript-starter
+          
+          echo "Connecting to EC2 instance to run deployment commands..."
+          ssh -o StrictHostKeyChecking=no -i $EC2_KEY $EC2_USER@$EC2_HOST << 'EOF'
+            echo "Connected to EC2 instance."
+            cd /home/ubuntu/typescript-starter
+            echo "Running tests..."
+            npm run test
+            echo "Starting application with pm2..."
+            ./node_modules/.bin/pm2 start npm --name "typescript-starter" -- run start
+            ./node_modules/.bin/pm2 save
+            echo "Deployment completed."
+          EOF
