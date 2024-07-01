@@ -21,7 +21,10 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@34.229.139.68 << 'EOF'
+
+        # Get into the directory
         cd /home/ubuntu/hello-world-app
+        
         # Install pm2 if not already installed
           if ! command -v pm2 &> /dev/null
           then
@@ -30,8 +33,16 @@ jobs:
           else
             echo "pm2 is already installed"
           fi
+
+        # Pull the project if any changes are made  
         git pull origin main
+
+        # Install install required dependencies
         npm install
+
+        # Build the NestJS App
         npm run build
+
+        # Start the NestJS server using pm2
         pm2 start npm --name hello-world-app
         EOF
