@@ -19,20 +19,19 @@ jobs:
         ssh-private-key: ${{ secrets.EC2_KEY }}  
       
     - name: Deploy to EC2
-      with:
-        script: | 
-          ssh -o StrictHostKeyChecking=no ubuntu@34.229.139.68 << 'EOF'
-          cd /home/ubuntu/hello-world-app
-          # Install pm2 if not already installed
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@34.229.139.68 << 'EOF'
+        cd /home/ubuntu/hello-world-app
+        # Install pm2 if not already installed
           if ! command -v pm2 &> /dev/null
           then
             echo "pm2 not found, installing..."
             sudo npm install -g pm2
           else
-           echo "pm2 is already installed"
+            echo "pm2 is already installed"
           fi
-          git pull origin main
-          npm install
-          npm run build
-          pm2 start npm --name hello-world-app
-          EOF
+        git pull origin main
+        npm install
+        npm run build
+        pm2 start npm --name hello-world-app
+        EOF
