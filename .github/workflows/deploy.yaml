@@ -18,6 +18,14 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: | 
             cd /home/ubuntu/hello-world-app
+            # Install pm2 if not already installed
+            if ! command -v pm2 &> /dev/null
+            then
+              echo "pm2 not found, installing..."
+              sudo npm install -g pm2
+            else
+              echo "pm2 is already installed"
+            fi
             git pull origin main
             npm install
             npm run build
